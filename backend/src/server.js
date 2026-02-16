@@ -19,20 +19,38 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '';
 const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL || 'http://localhost:5173';
 const CORS_ORIGINS = process.env.CORS_ORIGINS || FRONTEND_ORIGIN || 'http://localhost:5173';
 
-const allowedOrigins = CORS_ORIGINS.split(',')
+let clientBaseOrigin = '';
+try {
+  clientBaseOrigin = new URL(CLIENT_BASE_URL).origin;
+} catch {
+  clientBaseOrigin = '';
+}
+
+const allowedOrigins = [...new Set([...CORS_ORIGINS.split(','), clientBaseOrigin, 'http://localhost:5173'])]
   .map((origin) => origin.trim())
   .filter(Boolean);
 
 function isOriginAllowed(origin) {
   if (!origin) return true;
+
+  let parsedOrigin = null;
+  try {
+    parsedOrigin = new URL(origin);
+  } catch {
+    parsedOrigin = null;
+  }
+
   return allowedOrigins.some((allowedOrigin) => {
     if (allowedOrigin === origin) {
       return true;
     }
 
     if (allowedOrigin.startsWith('*.')) {
-      const suffix = allowedOrigin.slice(1); // .example.com
-      return origin.endsWith(suffix);
+      const wildcardHost = allowedOrigin.slice(2).toLowerCase();
+      const originHost = parsedOrigin?.hostname?.toLowerCase();
+
+      if (!originHost) return false;
+      return originHost === wildcardHost || originHost.endsWith(`.${wildcardHost}`);
     }
 
     return false;
@@ -46,14 +64,21 @@ const corsOptions = {
       return;
     }
 
-    callback(new Error('Origin not allowed by CORS'));
+    callback(null, false);
   },
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 };
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin(origin, callback) {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, false);
+    },
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
   }
 });

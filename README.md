@@ -75,29 +75,34 @@ The app uses two core mechanisms.
   - Backend returns 410 (gone/closed).
   - Frontend surfaces closure messaging.
 
+7. **Non-creator trying to delete poll**
+  - Backend validates requester `x-device-id` against poll `creatorDeviceId`.
+  - If not matched, backend returns 403 (`Only poll creator can delete this poll.`).
+  - Frontend also hides **Delete poll** button for non-creators (`canDelete=false`).
+
 ### Voting Logic
 
-7. **Duplicate vote attempts**
+8. **Duplicate vote attempts**
   - Same device + same option: no additional increment.
   - Same device + different option: vote updated (moved).
   - Different device + same IP: blocked.
 
-8. **Remove vote when user has no vote**
+9. **Remove vote when user has no vote**
   - Backend returns 404 with explicit message.
 
-9. **Invalid option selection**
+10. **Invalid option selection**
   - Backend validates `optionId` against poll options and rejects invalid IDs.
 
 ### Realtime and Network
 
-10. **Network disconnection during vote**
+11. **Network disconnection during vote**
    - Frontend catches network errors and shows error feedback.
    - Socket reconnection is enabled.
 
-11. **Joining room for unavailable poll**
+12. **Joining room for unavailable poll**
    - Socket path validates poll existence/deletion and emits `poll_unavailable`.
 
-12. **Realtime consistency for all viewers**
+13. **Realtime consistency for all viewers**
    - Backend persists vote changes first, then emits `vote_updated` to room.
    - All clients in poll room receive synchronized state.
 
@@ -112,8 +117,9 @@ The app uses two core mechanisms.
   - Shared networks/NAT can falsely block legitimate users.
   - Dynamic mobile IP changes can reduce accuracy.
 
-3. **No user authentication/ownership model**
-  - Poll delete/control is not tied to a strong identity model.
+3. **Ownership model is device-token based (not account-based)**
+  - Creator-only delete is implemented, but identity still depends on local-storage device token.
+  - If creator clears local storage or changes browser/device, ownership continuity can be lost.
 
 4. **Potential concurrency concerns under heavy load**
   - Vote update logic is app-level; very high parallel traffic benefits from stronger transactional controls.
@@ -146,8 +152,9 @@ The app uses two core mechanisms.
   - Stricter limits for vote endpoints.
   - Shared store (e.g., Redis) for multi-instance deployments.
 
-6. **Add ownership controls**
-  - Poll creator token/auth for delete/edit operations.
+6. **Strengthen ownership controls**
+  - Move from device-token ownership to authenticated accounts or signed creator tokens.
+  - Add creator recovery flow (e.g., signed admin link) to prevent ownership loss after storage reset.
 
 7. **Improve observability and operations**
   - Structured logs, request IDs, error classes, metrics dashboards, uptime alerts.
@@ -166,3 +173,5 @@ Fairness is currently enforced by:
 2. **IP-based secondary restriction**
 
 Core functional and realtime edge cases are covered, and the next iteration should focus on stronger identity, concurrency guarantees, scalability, and production observability.
+
+Also, poll deletion is now restricted to the original poll creator (device-token match), and non-creators do not see delete controls in UI.

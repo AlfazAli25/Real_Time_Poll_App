@@ -102,12 +102,29 @@ function emitPollUpdate(poll) {
   io.to(poll.id).emit('vote_updated', toPublicPoll(poll));
 }
 
+function getRequesterDeviceId(req) {
+  return String(req.headers['x-device-id'] ?? '').trim();
+}
+
+function isCreator(poll, deviceId) {
+  if (!deviceId) return false;
+  if (poll?.creatorDeviceId) {
+    return poll.creatorDeviceId === deviceId;
+  }
+  return false;
+}
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, dbState: getDatabaseState() });
 });
 
 app.post('/api/polls', async (req, res) => {
   try {
+    const creatorDeviceId = getRequesterDeviceId(req);
+    if (!creatorDeviceId) {
+      return res.status(400).json({ message: 'Missing device token.' });
+    }
+
     const question = String(req.body?.question ?? '').trim();
     const options = Array.isArray(req.body?.options) ? req.body.options : [];
     const expiresInMinutesRaw = req.body?.expiresInMinutes;
@@ -120,7 +137,7 @@ app.post('/api/polls', async (req, res) => {
       return res.status(400).json({ message: 'Question cannot be empty.' });
     }
 
-    const poll = createPoll({ question, options, expiresInMinutes });
+    const poll = createPoll({ question, options, expiresInMinutes, creatorDeviceId });
 
     if (poll.options.length < 2) {
       return res.status(400).json({ message: 'At least two valid options are required.' });
@@ -130,7 +147,8 @@ app.post('/api/polls', async (req, res) => {
 
     return res.status(201).json({
       poll: toPublicPoll(poll),
-      shareLink: `${CLIENT_BASE_URL}/poll/${poll.id}`
+      shareLink: `${CLIENT_BASE_URL}/poll/${poll.id}`,
+      canDelete: true
     });
   } catch {
     return res.status(500).json({ message: 'Failed to create poll.' });
@@ -139,13 +157,14 @@ app.post('/api/polls', async (req, res) => {
 
 app.get('/api/polls/:pollId', async (req, res) => {
   try {
+    const deviceId = getRequesterDeviceId(req);
     const poll = await getPollById(req.params.pollId);
 
     if (!poll || poll.isDeleted) {
       return res.status(404).json({ message: 'Poll not found.' });
     }
 
-    return res.json({ poll: toPublicPoll(poll) });
+    return res.json({ poll: toPublicPoll(poll), canDelete: isCreator(poll, deviceId) });
   } catch {
     return res.status(500).json({ message: 'Failed to load poll.' });
   }
@@ -153,6 +172,7 @@ app.get('/api/polls/:pollId', async (req, res) => {
 
 app.post('/api/polls/:pollId/vote', async (req, res) => {
   try {
+    const deviceId = getRequesterDeviceId(req);
     const poll = await getPollById(req.params.pollId);
 
     if (!poll || poll.isDeleted) {
@@ -171,8 +191,6 @@ app.post('/api/polls/:pollId/vote', async (req, res) => {
     }
 
     const ip = extractClientIp(req);
-    const deviceId = String(req.headers['x-device-id'] ?? '').trim();
-
     if (!deviceId) {
       return res.status(400).json({ message: 'Missing device token.' });
     }
@@ -190,7 +208,8 @@ app.post('/api/polls/:pollId/vote', async (req, res) => {
       if (voterByDevice.optionId === option.id) {
         return res.json({
           message: 'You already voted for this option.',
-          poll: toPublicPoll(poll)
+          poll: toPublicPoll(poll),
+          canDelete: isCreator(poll, deviceId)
         });
       }
 
@@ -220,7 +239,8 @@ app.post('/api/polls/:pollId/vote', async (req, res) => {
 
     return res.json({
       message: voterByDevice ? 'Vote updated.' : 'Vote accepted.',
-      poll: toPublicPoll(poll)
+      poll: toPublicPoll(poll),
+      canDelete: isCreator(poll, deviceId)
     });
   } catch {
     return res.status(500).json({ message: 'Failed to cast vote.' });
@@ -229,6 +249,7 @@ app.post('/api/polls/:pollId/vote', async (req, res) => {
 
 app.delete('/api/polls/:pollId/vote', async (req, res) => {
   try {
+    const deviceId = getRequesterDeviceId(req);
     const poll = await getPollById(req.params.pollId);
 
     if (!poll || poll.isDeleted) {
@@ -239,7 +260,6 @@ app.delete('/api/polls/:pollId/vote', async (req, res) => {
       return res.status(410).json({ message: 'Poll has expired. Voting is closed.' });
     }
 
-    const deviceId = String(req.headers['x-device-id'] ?? '').trim();
     if (!deviceId) {
       return res.status(400).json({ message: 'Missing device token.' });
     }
@@ -265,7 +285,8 @@ app.delete('/api/polls/:pollId/vote', async (req, res) => {
 
     return res.json({
       message: 'Vote removed.',
-      poll: toPublicPoll(poll)
+      poll: toPublicPoll(poll),
+      canDelete: isCreator(poll, deviceId)
     });
   } catch {
     return res.status(500).json({ message: 'Failed to remove vote.' });
@@ -274,6 +295,17 @@ app.delete('/api/polls/:pollId/vote', async (req, res) => {
 
 app.delete('/api/polls/:pollId', async (req, res) => {
   try {
+    const deviceId = getRequesterDeviceId(req);
+    const poll = await getPollById(req.params.pollId);
+
+    if (!poll) {
+      return res.status(404).json({ message: 'Poll not found.' });
+    }
+
+    if (!isCreator(poll, deviceId)) {
+      return res.status(403).json({ message: 'Only poll creator can delete this poll.' });
+    }
+
     const deleted = await deletePollById(req.params.pollId);
 
     if (!deleted) {

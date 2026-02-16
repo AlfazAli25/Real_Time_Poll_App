@@ -25,6 +25,7 @@ export default function PollPage() {
   const [voteMessage, setVoteMessage] = useState('');
   const [selectedOptionId, setSelectedOptionId] = useState('');
   const [disconnected, setDisconnected] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
 
   const isClosed = useMemo(() => !poll || poll.isDeleted || poll.isExpired, [poll]);
 
@@ -47,6 +48,7 @@ export default function PollPage() {
         const response = await getPoll(pollId);
         if (active) {
           setPoll(response.poll);
+          setCanDelete(Boolean(response.canDelete));
           setSelectedOptionId((prev) => prev || response.poll.options[0]?.id || '');
         }
       } catch (requestError) {
@@ -101,6 +103,7 @@ export default function PollPage() {
     try {
       const result = await votePoll(pollId, selectedOptionId);
       setPoll(result.poll);
+      setCanDelete(Boolean(result.canDelete));
       setVoteMessage(result.message || 'Your vote has been recorded.');
     } catch (requestError) {
       if (!requestError.response) {
@@ -135,6 +138,7 @@ export default function PollPage() {
     try {
       const result = await removeVotePoll(pollId);
       setPoll(result.poll);
+      setCanDelete(Boolean(result.canDelete));
       setVoteMessage('Your vote has been removed. You can vote again.');
     } catch (requestError) {
       if (!requestError.response) {
@@ -226,9 +230,11 @@ export default function PollPage() {
         <button className="btn-muted" onClick={handleRemoveVote} disabled={isClosed || voteLoading}>
           Remove Vote
         </button>
-        <button className="btn-danger" onClick={handleDelete} disabled={!poll || poll.isDeleted || voteLoading}>
-          Delete poll
-        </button>
+        {canDelete ? (
+          <button className="btn-danger" onClick={handleDelete} disabled={!poll || poll.isDeleted || voteLoading}>
+            Delete poll
+          </button>
+        ) : null}
       </div>
 
       {voteMessage ? (

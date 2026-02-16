@@ -28,6 +28,7 @@ const PollSchema = new mongoose.Schema(
     expiresAt: { type: Date, default: null },
     isDeleted: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
+    creatorDeviceId: { type: String, default: '' },
     voters: { type: [VoterSchema], default: [] },
     voterIps: { type: [String], default: [] },
     voterDevices: { type: [String], default: [] }

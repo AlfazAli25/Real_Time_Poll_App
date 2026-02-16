@@ -21,12 +21,22 @@ export function getOrCreateDeviceId() {
 }
 
 export async function createPoll(payload) {
-  const { data } = await api.post('/polls', payload);
+  const deviceId = getOrCreateDeviceId();
+  const { data } = await api.post('/polls', payload, {
+    headers: {
+      'x-device-id': deviceId
+    }
+  });
   return data;
 }
 
 export async function getPoll(pollId) {
-  const { data } = await api.get(`/polls/${pollId}`);
+  const deviceId = getOrCreateDeviceId();
+  const { data } = await api.get(`/polls/${pollId}`, {
+    headers: {
+      'x-device-id': deviceId
+    }
+  });
   return data;
 }
 
@@ -55,6 +65,11 @@ export async function removeVotePoll(pollId) {
 }
 
 export async function deletePoll(pollId) {
-  const { data } = await api.delete(`/polls/${pollId}`);
+  const deviceId = getOrCreateDeviceId();
+  const { data } = await api.delete(`/polls/${pollId}`, {
+    headers: {
+      'x-device-id': deviceId
+    }
+  });
   return data;
 }

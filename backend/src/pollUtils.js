@@ -7,7 +7,7 @@ export function normalizeOptions(options = []) {
     .map((text) => ({ id: uuidv4(), text, votes: 0 }));
 }
 
-export function createPoll({ question, options, expiresInMinutes }) {
+export function createPoll({ question, options, expiresInMinutes, creatorDeviceId }) {
   const now = Date.now();
   const hasExpiry = Number.isFinite(expiresInMinutes) && expiresInMinutes > 0;
 
@@ -19,6 +19,7 @@ export function createPoll({ question, options, expiresInMinutes }) {
     expiresAt: hasExpiry ? new Date(now + expiresInMinutes * 60_000).toISOString() : null,
     isDeleted: false,
     deletedAt: null,
+    creatorDeviceId,
     voters: [],
     voterIps: [],
     voterDevices: []

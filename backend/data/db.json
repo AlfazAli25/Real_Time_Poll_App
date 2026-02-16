@@ -1,0 +1,131 @@
+{
+  "polls": [
+    {
+      "id": "ee9ae5ea-6df9-4447-ba0c-2e4ba6c5f7a3",
+      "question": "Fav Movie?",
+      "options": [
+        {
+          "id": "3bf9ab74-3874-42f1-97db-579b537f250b",
+          "text": "The Dark Knight",
+          "votes": 0
+        },
+        {
+          "id": "e6cddf48-9ed1-4099-864a-fd3ee51077cc",
+          "text": "Interstellar",
+          "votes": 1
+        }
+      ],
+      "createdAt": "2026-02-16T04:28:39.310Z",
+      "expiresAt": null,
+      "isDeleted": false,
+      "deletedAt": null,
+      "voterIps": [
+        "::1"
+      ],
+      "voterDevices": [
+        "ec14426a-229f-46e7-bd6c-59ae72b66242"
+      ]
+    },
+    {
+      "id": "0eedd6a5-ef57-4c58-95d8-66febf8bee6b",
+      "question": "What's ur fav TV Show?",
+      "options": [
+        {
+          "id": "adbc6dd6-4ecb-4e00-93e5-9014a927f0ee",
+          "text": "Breaking Bad",
+          "votes": 0
+        },
+        {
+          "id": "79e33276-a970-41fd-b2f2-3b068fc677cc",
+          "text": "Game of Thrones",
+          "votes": 0
+        },
+        {
+          "id": "18887f3c-3ab4-4afa-9ee5-f2161a309daa",
+          "text": "Better Call Saul",
+          "votes": 1
+        },
+        {
+          "id": "fdc5182e-0566-4a64-890e-1628359e2e37",
+          "text": "Dark",
+          "votes": 0
+        },
+        {
+          "id": "77feb487-bb8d-49a9-bf61-8f936e68a2ee",
+          "text": "True Detective",
+          "votes": 0
+        }
+      ],
+      "createdAt": "2026-02-16T04:46:24.758Z",
+      "expiresAt": null,
+      "isDeleted": true,
+      "deletedAt": "2026-02-16T04:47:17.223Z",
+      "voterIps": [
+        "::1"
+      ],
+      "voterDevices": [
+        "ec14426a-229f-46e7-bd6c-59ae72b66242"
+      ]
+    },
+    {
+      "id": "b47ab207-2a39-43be-aed0-53e94471156e",
+      "question": "vhemawmhbf",
+      "options": [
+        {
+          "id": "3b8f2a98-69ed-4fe3-80bb-bdec4984d287",
+          "text": "fber",
+          "votes": 1
+        },
+        {
+          "id": "2a8c20bd-ce1d-4ff6-a73d-9e88dcaa58de",
+          "text": "uh3r",
+          "votes": 0
+        }
+      ],
+      "createdAt": "2026-02-16T04:47:39.851Z",
+      "expiresAt": "2026-02-16T04:48:39.851Z",
+      "isDeleted": true,
+      "deletedAt": "2026-02-16T04:49:23.996Z",
+      "voterIps": [
+        "::1"
+      ],
+      "voterDevices": [
+        "ec14426a-229f-46e7-bd6c-59ae72b66242"
+      ]
+    },
+    {
+      "id": "11340d80-489f-4355-a825-07542c7b2c3c",
+      "question": "Hi?",
+      "options": [
+        {
+          "id": "3b46b313-8744-4994-ba16-1187520646b2",
+          "text": "Hello",
+          "votes": 1
+        },
+        {
+          "id": "63bda609-eba4-4110-8cf1-aad6eefa18bd",
+          "text": "Hey",
+          "votes": 0
+        }
+      ],
+      "createdAt": "2026-02-16T05:08:43.008Z",
+      "expiresAt": null,
+      "isDeleted": true,
+      "deletedAt": "2026-02-16T05:32:05.430Z",
+      "voterIps": [
+        "::1"
+      ],
+      "voterDevices": [
+        "ec14426a-229f-46e7-bd6c-59ae72b66242"
+      ],
+      "voters": [
+        {
+          "deviceId": "ec14426a-229f-46e7-bd6c-59ae72b66242",
+          "ip": "::1",
+          "optionId": "3b46b313-8744-4994-ba16-1187520646b2",
+          "votedAt": "2026-02-16T05:31:14.563Z"
+        }
+      ]
+    }
+  ]
+}
